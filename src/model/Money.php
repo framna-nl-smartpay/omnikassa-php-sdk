@@ -38,7 +38,31 @@ class Money implements \JsonSerializable, SignatureDataProvider
      */
     public static function fromDecimal($currency, $amount)
     {
-        $roundedAmountInCents = round($amount * 100);
+        $amountStr = number_format($amount, 3, '.', '');
+        $decimalPos = strpos($amountStr, '.');
+
+        $wholePart = (int)substr($amountStr, 0, $decimalPos);
+        $decimalPart = substr($amountStr, $decimalPos + 1);
+
+        // Pad or truncate to exactly 3 decimal places
+        $decimalPart = str_pad($decimalPart, 3, '0');
+        $decimalPart = substr($decimalPart, 0, 3);
+
+        // Manual rounding: if third decimal >= 5, round up
+        $firstTwoDecimals = (int)substr($decimalPart, 0, 2);
+        $thirdDecimal = (int)substr($decimalPart, 2, 1);
+
+        if (5 <= $thirdDecimal) {
+            $firstTwoDecimals += 1;
+            // Handle overflow (99 + 1 = 100)
+            if (100 === $firstTwoDecimals) {
+                $wholePart = $wholePart + 1;
+                $firstTwoDecimals = 0;
+            }
+        }
+
+        $roundedAmountInCents = $wholePart * 100 + $firstTwoDecimals;
+
 
         return self::fromCents($currency, $roundedAmountInCents);
     }
