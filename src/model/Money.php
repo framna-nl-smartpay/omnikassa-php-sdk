@@ -42,7 +42,7 @@ class Money implements JsonSerializable, SignatureDataProvider
         $amountStr = number_format($amount, 3, '.', '');
         $decimalPos = strpos($amountStr, '.');
 
-        $wholePart = (int)substr($amountStr, 0, $decimalPos);
+        $wholePart = (int) substr($amountStr, 0, $decimalPos);
         $decimalPart = substr($amountStr, $decimalPos + 1);
 
         // Pad or truncate to exactly 3 decimal places
@@ -50,11 +50,11 @@ class Money implements JsonSerializable, SignatureDataProvider
         $decimalPart = substr($decimalPart, 0, 3);
 
         // Manual rounding: if third decimal >= 5, round up
-        $firstTwoDecimals = (int)substr($decimalPart, 0, 2);
-        $thirdDecimal = (int)substr($decimalPart, 2, 1);
+        $firstTwoDecimals = (int) substr($decimalPart, 0, 2);
+        $thirdDecimal = (int) substr($decimalPart, 2, 1);
 
         if (5 <= $thirdDecimal) {
-            $firstTwoDecimals += 1;
+            ++$firstTwoDecimals;
             // Handle overflow (99 + 1 = 100)
             if (100 === $firstTwoDecimals) {
                 $wholePart = $wholePart + 1;
@@ -63,7 +63,6 @@ class Money implements JsonSerializable, SignatureDataProvider
         }
 
         $roundedAmountInCents = $wholePart * 100 + $firstTwoDecimals;
-
 
         return self::fromCents($currency, $roundedAmountInCents);
     }
